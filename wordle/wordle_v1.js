@@ -1,4 +1,3 @@
-
 function randomNumber() {
   return Math.floor(100 * Math.random());
 }
@@ -20,9 +19,9 @@ function getRandomWord() {
 }
 
 function getInputFromUser() {
-  const userInput = prompt("Enter the word :");
+  const userInput = prompt("  Enter the word :");
   if (userInput.length !== 5) {
-    console.log("enter word of length 5 😅");
+    console.log("  Enter word of length 5 😅");
     return getInputFromUser();
   }
   return userInput.split("");
@@ -31,40 +30,59 @@ function getInputFromUser() {
 
 function chechSimilarLetters() {
   const randomWord = getRandomWord();
-  let numberOfChance = 0;
-  while (numberOfChance < 10) {
-    const similarityIndex = [0,0,0,0,0];
+
+  let numberOfChance = 10;
+  while (numberOfChance > 0) {
+    console.log(" LIFE :", numberOfChance);
+    const probabilityChart = [0,0,0,0,0];
     const userWord = getInputFromUser();
     
     for (let index = 0; index < 5; index++) {
       if (randomWord.includes(userWord[index])) {
-        similarityIndex[index] = 1;
+        probabilityChart[index] = 1;
       }
     }
     
     let countOfSimilarWords = 0;
     for (let index = 0; index < 5; index++) {
       if (randomWord[index] === userWord[index]) {
-        similarityIndex[index] = 2;
+        probabilityChart[index] = 2;
         countOfSimilarWords++;
       }
     }
     if (countOfSimilarWords === 5) {
-      return true;
+      return "won 🏆";
     }
-    console.log(similarityIndex);
-    numberOfChance++;
+    console.log(`\t\t ${probabilityChart}`);
+    numberOfChance--;
   }
-  console.log("the random word was", randomWord);
-  return false;
+  console.log("  The word was", randomWord);
+  return "lost ❌";
+}
+
+function printDescription() {
+  const title = "\tWordle by Santo\n";
+  const objective = "  Objective : To guess the 5 letter word"
+  const rules = `
+  RULES :
+    ⚝  You have 10 guesses
+    ⚝  The probabilityChart array will show how close you are to the word
+    ⚝  2 = exacat character position
+    ⚝  1 = character position is wrong
+    ⚝  0 = character is not part of the word\n`;
+  
+  console.clear();
+  console.log(`${title} \n${objective} ${rules}`);
 }
 
 function main() {
-  if (chechSimilarLetters()) {
-    console.log("You won \n 🤝");
-    return;
+  printDescription();
+  const result = chechSimilarLetters();
+  console.log(`You ${result}`);
+
+  if (confirm("Do you want to play again ?")) {
+    main();
   }
-  console.log("You lost ❌");
 }
 
 main();
