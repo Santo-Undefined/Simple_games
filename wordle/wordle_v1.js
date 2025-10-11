@@ -78,46 +78,82 @@ function checkForExactMatch(randomWord, userInput) {
   return result;
 }
 
-function chechSimilarLetters() {
+function printScreen(difficulty, life, resultHistory) {
+  printDescription(difficulty);
+  console.log(`  LIFE : ${life} ${"❤️ ".repeat(life)}${"💔".repeat(difficulty - life)}`);
+  console.log(`\t\t   ${resultHistory.join("\n\t\t   ")}`);
+
+}
+function gameLogic(difficulty) {
   const randomWord = getRandomWord();
-  let numberOfChance = 10;
+  let numberOfChance = difficulty;
+  const resultHistory = [];
   while (numberOfChance > 0) {
-    console.log(" LIFE :", numberOfChance);
+    printScreen(difficulty, numberOfChance, resultHistory);
     const userWord = getInputFromUser();
-    
+
     const exactMacthes = checkForExactMatch(randomWord, userWord);
     if (exactMacthes[2] === 5) {
       return "won 🏆";
     }
     const positionMisMatch = checkForMatches(exactMacthes[0], exactMacthes[1]);
-    console.log(`\t\t ${positionMisMatch[1].join(" ")}`);
+    resultHistory.push(positionMisMatch[1].join(" "))
+
     numberOfChance--;
   }
   console.log("  The word was", randomWord);
   return "lost ❌";
 }
 
-function printDescription() {
+function levelInfo(level) {
+  switch (level) {
+    case 1: return 15;
+    case 2: return 10;
+    case 3: return 5;
+  }
+}
+
+function chooseDifficulty() {
   const title = "\tWordle by Santo\n";
-  const objective = "  Objective : To guess the 5 letter word"
+  const objective = "  Objective : To guess the 5 letter word";
+  const levelDescription = `
+  Level 1 EASY   (15 guesses)
+  Level 2 MEDIUM (10 guesses)
+  Level 3 HARD   (5 guesses)`;
+
+  console.clear();
+  console.log(`${title} \n${objective} ${levelDescription}`);
+  const level = parseInt((prompt("  Choose Level = ")), 10);
+  if (isNaN(level) || !(level > 0 && level < 4)) {
+    console.log("Enter level  between 1,2,3");
+    return chooseDifficulty();
+  }
+  return levelInfo(level);
+}
+
+function printDescription(difficulty) {
+  const title = "\tWordle by Santo\n";
+  const objective = "  Objective : To guess the 5 letter word";
   const rules = `
   RULES :
-    ⚝  You have 10 guesses
-    ⚝  The probabilityChart array will show how close you are to the word
-    ⚝  Green = exacat character position
-    ⚝  Yellow = character position is wrong
-    ⚝  No Colour = character is not part of the word\n`;
+    ⚝  You have ${difficulty} guesses
+    ⚝  The History chart will show how close you are to the word
+    ⚝  🟢 Green = exact character position
+    ⚝  🟡 Yellow = character position is wrong
+    ⚝  🫥 No Colour = character is not part of the word\n`;
   
   console.clear();
   console.log(`${title} \n${objective} ${rules}`);
 }
 
 function main() {
-  printDescription();
-  const result = chechSimilarLetters();
-  console.log(`You ${result}`);
+  const difficulty = chooseDifficulty();
+  printDescription(difficulty);
+  const result = gameLogic(difficulty);
+  console.log(`  You ${result}`);
 
-  if (confirm("Do you want to play again ?")) {
+  const deicision = confirm("  Do you want to play again ?");
+  if (deicision) {
     main();
   }
 }
