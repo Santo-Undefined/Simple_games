@@ -1,3 +1,7 @@
+const RED = 1;
+const GREEN = 2;
+// const ORANGE = 
+
 function randomNumber() {
   return Math.floor(100 * Math.random());
 }
@@ -27,33 +31,64 @@ function getInputFromUser() {
   return userInput.split("");
 }
 
+function makeArrayCopy(array) {
+  const copy = [];
+  for (let index = 0; index < array.length; index++) {
+    copy.push(array[index]);
+  }
+  return copy;
+}
+function colorText(text, code) {
+  return `\x1B[4${code}m"${text}"\x1B[0m`;
+}
+function checkForMatches(randomWord, userInput) {
+  const copyOfRandom = makeArrayCopy(randomWord);
+  const copyOfInput = makeArrayCopy(userInput);
+
+  for (let index = 0; index < userInput.length; index++) {
+    if (copyOfRandom.includes(copyOfInput[index])) {
+      const indexOfCharInRandomWord = copyOfRandom.indexOf(userInput[index]);
+      copyOfRandom[indexOfCharInRandomWord] = 1;
+      copyOfInput[index] = `\x1B[43m${copyOfInput[index]}\x1B[0m`;
+    }
+  }
+  const result = [];
+  result.push(copyOfRandom);
+  result.push(copyOfInput);
+  return result;
+}
+
+function checkForExactMatch(randomWord, userInput) {
+  const copyOfRandom = makeArrayCopy(randomWord);
+  const copyOfInput = makeArrayCopy(userInput);
+  let countOfSimilarWords = 0;
+  for (let index = 0; index < userInput.length; index++) {
+    if (randomWord[index] === userInput[index]) {
+      copyOfRandom[index] = 0;
+      copyOfInput[index] = `\x1B[42m${userInput[index]}\x1B[0m`;
+      countOfSimilarWords++;
+    }
+  }
+  const result = [];
+  result.push(copyOfRandom);
+  result.push(copyOfInput);
+  result.push(countOfSimilarWords);
+  return result;
+}
 
 function chechSimilarLetters() {
   const randomWord = getRandomWord();
-
   let numberOfChance = 10;
   while (numberOfChance > 0) {
     console.log(" LIFE :", numberOfChance);
-    const probabilityChart = [0,0,0,0,0];
     const userWord = getInputFromUser();
     
-    for (let index = 0; index < 5; index++) {
-      if (randomWord.includes(userWord[index])) {
-        probabilityChart[index] = 1;
-      }
-    }
-    
-    let countOfSimilarWords = 0;
-    for (let index = 0; index < 5; index++) {
-      if (randomWord[index] === userWord[index]) {
-        probabilityChart[index] = 2;
-        countOfSimilarWords++;
-      }
-    }
-    if (countOfSimilarWords === 5) {
+    const exactMacthes = checkForExactMatch(randomWord, userWord);
+    if (exactMacthes[2] === 5) {
       return "won 🏆";
     }
-    console.log(`\t\t ${probabilityChart}`);
+    const positionMisMatch = checkForMatches(exactMacthes[0], exactMacthes[1]);
+    console.log(`\t\t ${positionMisMatch[1].join(" ")}`);
     numberOfChance--;
   }
   console.log("  The word was", randomWord);
