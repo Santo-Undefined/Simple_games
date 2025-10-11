@@ -93,8 +93,8 @@ function isWin(currentPos, winPos) {
 function makeHideArray(gameDetails) {
   const mazeSize = gameDetails[0];
   const startPoint = gameDetails[1];
-  console.log(startPoint);
   const endPoint = gameDetails[2];
+
   for (let index = 0; index < mazeSize; index++) {
     const cols = [];
     for (let index = 0; index < mazeSize; index++) {
@@ -102,6 +102,7 @@ function makeHideArray(gameDetails) {
     }
     HIDE_ARRAY.push(cols);
   }
+  
   HIDE_ARRAY[startPoint[0]][startPoint[1]] = PL;
   HIDE_ARRAY[endPoint[0] + 1][endPoint[1]] = LS;
 }
@@ -130,7 +131,6 @@ function getGameDetails(level) {
 
 function startGame(level) {
   const gameDetails = getGameDetails(level);
-  // const hideArray = makeHideArray(gameDetails[0], gameDetails[1]);
   makeHideArray(gameDetails);
   const hideArray = HIDE_ARRAY;
   const mazeArray = MAZE_ARRAY18_1;
@@ -139,7 +139,7 @@ function startGame(level) {
   while (true) {
     console.clear();
     printMaze(hideArray);
-    console.log(currentPos);
+    console.log(`number of move take : ${moveCount}`);
     const userMovement = prompt("enter where to move :");
     currentPos = moveUser(userMovement, currentPos, mazeArray, hideArray);
     moveCount++
@@ -149,7 +149,6 @@ function startGame(level) {
       console.log(`you won 🏆 !!! number of move take : ${moveCount}`);
       return;
     }
-    console.log(`number of move take :" ${moveCount}`);
   }
 }
 
