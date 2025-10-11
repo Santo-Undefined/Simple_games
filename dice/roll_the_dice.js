@@ -49,7 +49,7 @@ function animate (pos, delay) {
   while (pos !== 0){
     console.clear();
     console.log(colourize(DICE_FACES[randomDiceNumber()]));
-    makeDelay(delay + 1);
+    makeDelay(delay);
     pos--;
     delay++;
   }
