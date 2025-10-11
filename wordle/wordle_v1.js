@@ -1,6 +1,6 @@
-const RED = 1;
-const GREEN = 2;
-// const ORANGE = 
+const YELLOW = 11;
+const GREEN = 10;
+const BLACK = 0;
 
 function randomNumber() {
   return Math.floor(100 * Math.random());
@@ -22,6 +22,18 @@ function getRandomWord() {
   return word.split("");
 }
 
+function makeArrayCopy(array) {
+  const copy = [];
+  for (let index = 0; index < array.length; index++) {
+    copy.push(array[index]);
+  }
+  return copy;
+}
+
+function colorText(text, fg, bg) {
+  return `\x1B[38;5;${fg};48;5;${bg}m${text}\x1B[0m`;
+}
+
 function getInputFromUser() {
   const userInput = prompt("  Enter the word :");
   if (userInput.length !== 5) {
@@ -31,16 +43,6 @@ function getInputFromUser() {
   return userInput.split("");
 }
 
-function makeArrayCopy(array) {
-  const copy = [];
-  for (let index = 0; index < array.length; index++) {
-    copy.push(array[index]);
-  }
-  return copy;
-}
-function colorText(text, code) {
-  return `\x1B[4${code}m"${text}"\x1B[0m`;
-}
 function checkForMatches(randomWord, userInput) {
   const copyOfRandom = makeArrayCopy(randomWord);
   const copyOfInput = makeArrayCopy(userInput);
@@ -49,7 +51,7 @@ function checkForMatches(randomWord, userInput) {
     if (copyOfRandom.includes(copyOfInput[index])) {
       const indexOfCharInRandomWord = copyOfRandom.indexOf(userInput[index]);
       copyOfRandom[indexOfCharInRandomWord] = 1;
-      copyOfInput[index] = `\x1B[43m${copyOfInput[index]}\x1B[0m`;
+      copyOfInput[index] = colorText(copyOfInput[index], BLACK,YELLOW);
     }
   }
   const result = [];
@@ -65,7 +67,7 @@ function checkForExactMatch(randomWord, userInput) {
   for (let index = 0; index < userInput.length; index++) {
     if (randomWord[index] === userInput[index]) {
       copyOfRandom[index] = 0;
-      copyOfInput[index] = `\x1B[42m${userInput[index]}\x1B[0m`;
+      copyOfInput[index] = colorText(userInput[index], BLACK, GREEN);
       countOfSimilarWords++;
     }
   }
@@ -102,9 +104,9 @@ function printDescription() {
   RULES :
     ⚝  You have 10 guesses
     ⚝  The probabilityChart array will show how close you are to the word
-    ⚝  2 = exacat character position
-    ⚝  1 = character position is wrong
-    ⚝  0 = character is not part of the word\n`;
+    ⚝  Green = exacat character position
+    ⚝  Yellow = character position is wrong
+    ⚝  No Colour = character is not part of the word\n`;
   
   console.clear();
   console.log(`${title} \n${objective} ${rules}`);
