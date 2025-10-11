@@ -34,9 +34,9 @@ function randomDiceNumber() {
   return Math.floor(6 * Math.random());
 }
 
-function randomColour (text) {
-  const colour = Math.ceil(7 * Math.random());
-  return `\x1B[3${colour}m${text}\x1B[0m`;
+function colourize(text) {
+  const color = Math.floor(Math.random() * (231 - 1 + 1)) + 1;
+  return "\x1B[38;5;" + color + "m" + text + "\x1B[0m";;
 }
 
 function makeDelay(delay) {
@@ -46,13 +46,13 @@ function makeDelay(delay) {
 }
 
 function animate (pos, delay) {
-  if (pos === 0) {
-    return 0;
+  while (pos !== 0){
+    console.clear();
+    console.log(colourize(DICE_FACES[randomDiceNumber()]));
+    makeDelay(delay + 1);
+    pos--;
+    delay++;
   }
-  console.clear();
-  console.log(randomColour(DICE_FACES[randomDiceNumber()]));
-  makeDelay(delay + 1);
-  return animate (pos - 1, delay + 1);
 }
 
 function main() {
