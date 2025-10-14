@@ -12,14 +12,14 @@ const CON = "  ";
 const MAZE = [];
 
 function delay(multiplier = 2) {
-  for (let _ = 0; _ < MAX * multiplier; _++);
+  for (let _ = 0; _ < MAX * multiplier; _++); 
 }
 
 function randomNumber(maxLimit) {
   const number = Math.ceil((maxLimit) * Math.random());
-  if (number === 0) {
-    return randomNumber(maxLimit);
-  }
+  // if (number === 0) {
+  //   return randomNumber(maxLimit);
+  // }
   return number;
 }
 
@@ -51,6 +51,7 @@ function nextCell(movement, row, col, mazeArray) {
 }
 
 function bridgeCells(pervCell, nextCell, direction) {
+  
   const rowDiff = Math.abs(pervCell[0] - nextCell[0]);
   const colDiff = Math.abs(pervCell[1] - nextCell[1]);
   const distance = rowDiff + colDiff;
@@ -75,6 +76,7 @@ function bridgeCells(pervCell, nextCell, direction) {
 }
 
 function findAllcells(mazeSize) {
+
   const totalCells = ((mazeSize - 1) / 2) ** 2;
   let checkPossibility = []
   const pathHistory = [];
@@ -86,21 +88,18 @@ function findAllcells(mazeSize) {
     const nextMove = randomNumber(4); // ✅
     const nextStep = nextCell(nextMove, row, col , MAZE);
 
-    const nextStepString = nextStep[1].join(",")
-    if (nextStep[0] && !visitedCellsString.includes(nextStepString)) {
-      const pervRow  = row;
-      const pervCol = col;
-      const pervCell = [pervRow, pervCol];
-      visitedCellsString.unshift(nextStepString);
+    const nextStepString = nextStep[1].join(",");
 
+    if (nextStep[0] && !visitedCellsString.includes(nextStepString)) {
+      visitedCellsString.unshift(nextStepString); // storing the visited index
       pathHistory.unshift(nextStep[1]); //adding path
 
-      row = nextStep[1][0]; //nowRow stroes the next row
-      col = nextStep[1][1]; //now stores the next col
+      const pervCell = [row, col]; //store pervious cell indexes
+      row = nextStep[1][0]; //stores the next row
+      col = nextStep[1][1]; //stores the next col
 
       MAZE[row][col] = DON;
       bridgeCells(pervCell, nextStep[1], nextMove);
-      // printMaze(MAZE);
 
     } else if (!checkPossibility.includes(nextMove)) {
 
@@ -116,20 +115,12 @@ function findAllcells(mazeSize) {
       col = pathHistory[0][1];
       }
     }
-    delay(FAST_DELAY)
+    // delay(ULT_FAST_DELAY);
     const pervCellChar = MAZE[row][col]
     MAZE[row][col] = "🚜";
-    printMaze(MAZE);
+    // printMaze(MAZE);
     MAZE[row][col] = pervCellChar;
   }
-  // printMaze(MAZE);
-  // console.log(pathHistory);
-  // console.log(visitedCellsString);
-  // console.log(MAZE.join("\n")) 
-  // for (let index = 0; index < MAZE.length; index++){
-  //   console.log(MAZE[index]);
-    
-  // }
 }
 
 function printMaze(mazeArray) {
@@ -171,8 +162,7 @@ function takeUserInput() {
     
     if (!(isLevelValid)) {
       console.clear();
-      console.log("Enter a value between 5 and 99");
-      // prompt("Press any key to re-enter the maze size");
+      console.log("  ⭕️ Enter valid value ");
     }
   }
   return mazeSize;
