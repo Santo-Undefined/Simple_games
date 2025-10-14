@@ -17,9 +17,6 @@ function delay(multiplier = 2) {
 
 function randomNumber(maxLimit) {
   const number = Math.ceil((maxLimit) * Math.random());
-  // if (number === 0) {
-  //   return randomNumber(maxLimit);
-  // }
   return number;
 }
 
@@ -44,7 +41,7 @@ function nextCell(movement, row, col, mazeArray) {
   }
   const isCellPath = mazeArray[nowRow][nowCol] === PAT;
   const isCellVisited = mazeArray[nowRow][nowCol] === DON;
-  const isMovValid = isCellPath || isCellVisited;
+  const isMovValid = isCellPath //|| isCellVisited;
   const nextStep = [nowRow, nowCol];
   const result = [isMovValid, nextStep];
   return result;
@@ -117,7 +114,7 @@ function findAllcells(mazeSize) {
     // delay(1);
     // const pervCellChar = MAZE[row][col]
     // MAZE[row][col] = "🚜";
-    printMaze(MAZE);
+    // printMaze(MAZE);
     // MAZE[row][col] = pervCellChar;
   }
 }
@@ -167,13 +164,13 @@ function takeUserInput() {
   return mazeSize;
 }
 
-function main() {
-  let mazeSize = takeUserInput();
+function main(args) {
+  let mazeSize = args;
+  // let mazeSize = takeUserInput();
   mazeSize = mazeSize % 2 === 0 ? mazeSize - 1 : mazeSize;
   genrateMazeGrid(mazeSize);
   findAllcells(mazeSize);
-  // findAllcells(7);
   printMaze(MAZE);
 }
 
-main ();
+main (Deno.args);
