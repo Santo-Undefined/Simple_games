@@ -103,8 +103,7 @@ function findAllcells(mazeSize) {
 
     } else if (!checkPossibility.includes(nextMove)) {
 
-      checkPossibility.push(nextMove);
-      
+      checkPossibility.unshift(nextMove);
       if (checkPossibility.length === 4){
         checkPossibility = [];
         if (pathHistory[1] !== undefined) {
@@ -115,11 +114,11 @@ function findAllcells(mazeSize) {
       col = pathHistory[0][1];
       }
     }
-    // delay(ULT_FAST_DELAY);
-    const pervCellChar = MAZE[row][col]
-    MAZE[row][col] = "🚜";
-    // printMaze(MAZE);
-    MAZE[row][col] = pervCellChar;
+    // delay(1);
+    // const pervCellChar = MAZE[row][col]
+    // MAZE[row][col] = "🚜";
+    printMaze(MAZE);
+    // MAZE[row][col] = pervCellChar;
   }
 }
 
