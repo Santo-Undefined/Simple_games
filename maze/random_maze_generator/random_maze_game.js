@@ -11,8 +11,6 @@ const PL = "🐭"; // Player
 const LS = "🧀"; // goal
 const ES = "  "; // path (escape)
 
-let MAZE = [];
-
 function delay(multiplier = 2) {
   for (let _ = 0; _ < MAX * multiplier; _++);
 }
@@ -42,14 +40,14 @@ function nextCell(movement, row, col, mazeArray) {
       break;
   }
   const isCellPath = mazeArray[nowRow][nowCol] === PAT;
-  // const isCellVisited = mazeArray[nowRow][nowCol] === DON;
-  const isMovValid = isCellPath; //|| isCellVisited;
+  const isCellVisited = mazeArray[nowRow][nowCol] === DON;
+  const isMovValid = isCellPath || isCellVisited;
   const nextStep = [nowRow, nowCol];
   const result = [isMovValid, nextStep];
   return result;
 }
 
-function bridgeCells(pervCell, nextCell, direction) {
+function bridgeCells(maze, pervCell, nextCell, direction) {
   const rowDiff = Math.abs(pervCell[0] - nextCell[0]);
   const colDiff = Math.abs(pervCell[1] - nextCell[1]);
   const distance = rowDiff + colDiff;
@@ -59,21 +57,21 @@ function bridgeCells(pervCell, nextCell, direction) {
 
   switch (direction) {
     case 1: // UP
-      MAZE[pervCell[0] - 1][pervCell[1]] = DON;
+      maze[pervCell[0] - 1][pervCell[1]] = DON;
       return;
     case 2: // DOWN
-      MAZE[pervCell[0] + 1][pervCell[1]] = DON;
+      maze[pervCell[0] + 1][pervCell[1]] = DON;
       return;
     case 3: // LEFT
-      MAZE[pervCell[0]][pervCell[1] + 1] = DON;
+      maze[pervCell[0]][pervCell[1] + 1] = DON;
       return;
     case 4: // RIGHT
-      MAZE[pervCell[0]][pervCell[1] - 1] = DON;
+      maze[pervCell[0]][pervCell[1] - 1] = DON;
       return;
   }
 }
 
-function carveMazeCells(mazeSize) {
+function carveMazeCells(maze, mazeSize) {
   const totalCells = ((mazeSize - 1) / 2) ** 2;
   let checkPossibility = [];
   const pathHistory = [];
@@ -83,7 +81,7 @@ function carveMazeCells(mazeSize) {
 
   while (visitedCellsString.length < totalCells) {
     const nextMove = randomNumber(4); // ✅
-    const nextStep = nextCell(nextMove, row, col, MAZE);
+    const nextStep = nextCell(nextMove, row, col, maze);
     const nextStepString = nextStep[1].join(",");
 
     if (nextStep[0] && !visitedCellsString.includes(nextStepString)) {
@@ -94,29 +92,26 @@ function carveMazeCells(mazeSize) {
       row = nextStep[1][0]; //stores the next row
       col = nextStep[1][1]; //stores the next col
 
-      MAZE[row][col] = DON;
-      bridgeCells(pervCell, nextStep[1], nextMove);
+      maze[row][col] = DON;
+      bridgeCells(maze, pervCell, nextStep[1], nextMove);
     } else if (!checkPossibility.includes(nextMove)) {
       checkPossibility.unshift(nextMove);
       if (checkPossibility.length === 4) {
         checkPossibility = [];
         if (pathHistory[1] !== undefined) {
-          // console.log("history changed", pathHistory)
           pathHistory.shift(); //gets previous position
         }
         row = pathHistory[0][0];
-        // console.log("path History row",row);
         col = pathHistory[0][1];
-        // console.log("path History col",col);
       }
     }
   }
 }
 
-function printMaze(mazeArray) {
+function printMaze(maze) {
   console.clear();
-  for (let index = 0; index < mazeArray.length; index++) {
-    console.log("\t" + mazeArray[index].join(""));
+  for (let index = 0; index < maze.length; index++) {
+    console.log("\t" + maze[index].join(""));
   }
 }
 
@@ -130,14 +125,16 @@ function getChar(row, col) {
   return WAL;
 }
 function genrateMazeGrid(mazeSize) {
+  const newMaze = [];
   for (let col = 0; col < mazeSize; col++) {
     const column = [];
     for (let row = 0; row < mazeSize; row++) {
       column.push(getChar(row, col));
     }
-    MAZE.push(column);
+    newMaze.push(column);
   }
-  carveMazeCells(mazeSize);
+  carveMazeCells(newMaze, mazeSize);
+  return newMaze;
 }
 
 function isUserMoveValid(movement, pos, mazeArray) {
@@ -181,31 +178,30 @@ function getGameDetails(mazeSize) {
   details.push(18); // [0] maze size
   details.push([1, 1]); // [1] start coordinates
   details.push([mazeSize - 2, mazeSize - 2]); // [2] win coordinates
-  MAZE[mazeSize - 2][mazeSize - 2] = LS;
-  MAZE[1][1] = PL;
+
   return details;
 }
 
-function startGame(mazeSize) {
+function startGame(Maze, mazeSize) {
   const gameDetails = getGameDetails(mazeSize);
-  const mazeArray = MAZE;
-  let lastMove = "";
+  Maze[mazeSize - 2][mazeSize - 2] = LS;
+  Maze[1][1] = PL;
   let currentPos = gameDetails[1]; //start position
-
+  let lastMove = "";
   let moveCount = 0;
+
   while (true) {
-    printMaze(MAZE);
+    printMaze(Maze);
     console.log(`number of move taken : ${moveCount}`);
     const userMovement = prompt("enter where to move :");
     if (userMovement !== "") {
       lastMove = userMovement;
     }
-    currentPos = moveUser(lastMove, currentPos, mazeArray);
-    // if (!currentPos) continue;
+    currentPos = moveUser(lastMove, currentPos, Maze);
     moveCount++;
     if (isWin(currentPos, gameDetails[2])) {
       console.clear();
-      printMaze(mazeArray);
+      printMaze(Maze);
       console.log(`you won 🏆 !!! number of move take : ${moveCount}`);
       return;
     }
@@ -213,10 +209,13 @@ function startGame(mazeSize) {
 }
 
 function isInputVerifed(value) {
-  if (value.includes(".")) { return false; }
+  if (value.includes(".")) { 
+    return false; 
+  }
   const input = +value;
   const isItNumber = !isNaN(parseInt(input, 10));
-  const isNumberInRange = input > 4 && input < 100;
+  const isNumberInRange = input > 4 && input < 1000;
+  
   return isItNumber && isNumberInRange;
 }
 
@@ -227,9 +226,10 @@ function takeUserInput() {
   while (true) {
     console.clear();
     console.log(`${title} \n`);
-    const userInput = prompt(`  Give a number between 5 - 99 \n  ${warning}    Enter Maze size = `);
+    let userInput = prompt(`  Give a number between 5 - 99 \n  ${warning}    Enter Maze size = `);
 
     if (isInputVerifed(userInput)) {
+      userInput = userInput % 2 === 0 ? userInput - 1 : userInput;
       return +userInput;
     }
     warning = "  ⭕️ Enter valid value \n";
@@ -237,20 +237,15 @@ function takeUserInput() {
 }
 
 function main() {
-  MAZE = [];
-  console.log("maze in main", MAZE);
-  let mazeSize = takeUserInput();
-
+  const mazeSize = takeUserInput();
   console.log("Generating maze");
-  delay(20);
-  mazeSize = mazeSize % 2 === 0 ? mazeSize - 1 : mazeSize;
-  genrateMazeGrid(mazeSize);
 
-  startGame(mazeSize);
+  const Maze = genrateMazeGrid(mazeSize);
+  printMaze(Maze);
+  startGame(Maze, mazeSize);
+
   const playAgain = confirm("do you want to play again :");
-  if (playAgain) {
-    return main();
-  }
+  if (playAgain) { return main(); }
 }
 
 main();
