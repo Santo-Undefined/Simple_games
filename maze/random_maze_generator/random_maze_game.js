@@ -1,9 +1,10 @@
-const MAX = 10e7; // 10**8 ->times to almost 16ms
-const SAFE_DELAY = 5; //delays by 16ms
-const FAST_DELAY = 4; //delays by 14ms
-const SLOW_DELAY = 10; //delays by 30ms
-const ULT_FAST_DELAY = 2; //delays by 10ms
+// Movements
+const UP = "w";
+const DOWN = "s";
+const LEFT = "a";
+const RIGHT = "d";
 
+// Animation
 const WAL = "🟫";
 const PAT = "⚪️";
 const DON = "  ";
@@ -11,13 +12,10 @@ const PL = "🐭"; // Player
 const LS = "🧀"; // goal
 const ES = "  "; // path (escape)
 
-function delay(multiplier = 2) {
-  for (let _ = 0; _ < MAX * multiplier; _++);
-}
-
-function randomNumber(maxLimit) {
-  const number = Math.ceil(maxLimit * Math.random());
-  return number;
+function randomMove() {
+  const moves = [UP, DOWN, LEFT, RIGHT];
+  const index = Math.floor(4 * Math.random());
+  return moves[index];
 }
 
 function nextCell(movement, row, col, mazeArray) {
@@ -26,16 +24,16 @@ function nextCell(movement, row, col, mazeArray) {
   let nowCol = col;
 
   switch (movement) {
-    case 1: // UP
+    case UP:
       nowRow = (row - 2) < 0 ? 1 : row - 2;
       break;
-    case 2: // DOWN
+    case DOWN:
       nowRow = (row + 2) > mazeLength ? mazeLength - 1 : row + 2;
       break;
-    case 3: // LEFT
+    case LEFT:
       nowCol = (col + 2) > mazeLength ? mazeLength - 1 : col + 2;
       break;
-    case 4: // RIGHT
+    case RIGHT:
       nowCol = (col - 2) < 0 ? 1 : col - 2;
       break;
   }
@@ -47,26 +45,26 @@ function nextCell(movement, row, col, mazeArray) {
   return result;
 }
 
-function bridgeCells(maze, pervCell, nextCell, direction) {
-  const rowDiff = Math.abs(pervCell[0] - nextCell[0]);
-  const colDiff = Math.abs(pervCell[1] - nextCell[1]);
+function bridgeCells(maze, lastCell, nextCell, direction) {
+  const rowDiff = Math.abs(lastCell[0] - nextCell[0]);
+  const colDiff = Math.abs(lastCell[1] - nextCell[1]);
   const distance = rowDiff + colDiff;
   if (distance !== 2) {
     return;
   }
 
   switch (direction) {
-    case 1: // UP
-      maze[pervCell[0] - 1][pervCell[1]] = DON;
+    case UP:
+      maze[lastCell[0] - 1][lastCell[1]] = ES;
       return;
-    case 2: // DOWN
-      maze[pervCell[0] + 1][pervCell[1]] = DON;
+    case DOWN:
+      maze[lastCell[0] + 1][lastCell[1]] = ES;
       return;
-    case 3: // LEFT
-      maze[pervCell[0]][pervCell[1] + 1] = DON;
+    case LEFT:
+      maze[lastCell[0]][lastCell[1] + 1] = ES;
       return;
-    case 4: // RIGHT
-      maze[pervCell[0]][pervCell[1] - 1] = DON;
+    case RIGHT:
+      maze[lastCell[0]][lastCell[1] - 1] = ES;
       return;
   }
 }
@@ -80,7 +78,7 @@ function carveMazeCells(maze, mazeSize) {
   let col = 3;
 
   while (visitedCellsString.length < totalCells) {
-    const nextMove = randomNumber(4); // ✅
+    const nextMove = randomMove();
     const nextStep = nextCell(nextMove, row, col, maze);
     const nextStepString = nextStep[1].join(",");
 
@@ -139,69 +137,62 @@ function genrateMazeGrid(mazeSize) {
 
 function isUserMoveValid(movement, pos, mazeArray) {
   switch (movement) {
-    case "w":
+    case UP:
       return [ES, LS].includes(mazeArray[pos[0] - 1][pos[1]]);
-    case "s":
+    case DOWN:
       return [ES, LS].includes(mazeArray[pos[0] + 1][pos[1]]);
-    case "d":
+    case RIGHT:
       return [ES, LS].includes(mazeArray[pos[0]][pos[1] + 1]);
-    case "a":
+    case LEFT:
       return [ES, LS].includes(mazeArray[pos[0]][pos[1] - 1]);
   }
   return false;
 }
 
-function moveUser(movement, pos, mazeArray) {
-  if (!isUserMoveValid(movement, pos, mazeArray)) {
-    return pos;
+function moveUser(movement, pos, maze) {
+  if (!isUserMoveValid(movement, pos, maze)) {
+    return pos; //returns same position 
   }
   let row = pos[0];
   let col = pos[1];
-  mazeArray[pos[0]][pos[1]] = ES;
+  maze[row][col] = ES;
+  
   switch (movement) {
-    case "w": row = pos[0] - 1; break;
-    case "s": row = pos[0] + 1; break;
-    case "d": col = pos[1] + 1; break;
-    case "a": col = pos[1] - 1; break;
+    case UP: row = pos[0] - 1; break;
+    case DOWN: row = pos[0] + 1; break;
+    case RIGHT: col = pos[1] + 1; break;
+    case LEFT: col = pos[1] - 1; break;
   }
-  mazeArray[row][col] = PL;
-  const newPos = [row, col];
-  return newPos;
+
+  maze[row][col] = PL;
+  return [row, col];
 }
 
 function isWin(currentPos, winPos) {
   return currentPos[0] === winPos[0] && currentPos[1] === winPos[1];
 }
 
-function getGameDetails(mazeSize) {
-  const details = [];
-  details.push(18); // [0] maze size
-  details.push([1, 1]); // [1] start coordinates
-  details.push([mazeSize - 2, mazeSize - 2]); // [2] win coordinates
-
-  return details;
-}
-
-function startGame(Maze, mazeSize) {
-  const gameDetails = getGameDetails(mazeSize);
-  Maze[mazeSize - 2][mazeSize - 2] = LS;
-  Maze[1][1] = PL;
-  let currentPos = gameDetails[1]; //start position
+function startGame(maze, mazeSize) {
+  let currentPos = [1, 1];                      // start position
+  const winPos = [mazeSize - 2, mazeSize - 2];  // win position
+  maze[1][1] = PL;                              // player position
+  maze[winPos[0]][winPos[1]] = LS;              // cheese position
   let lastMove = "";
   let moveCount = 0;
 
   while (true) {
-    printMaze(Maze);
+    printMaze(maze);
     console.log(`number of move taken : ${moveCount}`);
     const userMovement = prompt("enter where to move :");
+    
     if (userMovement !== "") {
       lastMove = userMovement;
     }
-    currentPos = moveUser(lastMove, currentPos, Maze);
+    currentPos = moveUser(lastMove, currentPos, maze);
     moveCount++;
-    if (isWin(currentPos, gameDetails[2])) {
-      console.clear();
-      printMaze(Maze);
+    
+    if (isWin(currentPos, winPos)) {
+      printMaze(maze);
       console.log(`you won 🏆 !!! number of move take : ${moveCount}`);
       return;
     }
